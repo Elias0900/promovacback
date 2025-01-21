@@ -1,4 +1,4 @@
-package com.tresorerie.voyage.Auth;
+ackage com.tresorerie.voyage.Auth;
 
 import com.tresorerie.voyage.entity.User;
 import com.tresorerie.voyage.utils.HashUtil;

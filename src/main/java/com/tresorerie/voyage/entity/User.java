@@ -16,9 +16,16 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String username;
+    private String firstName;
+    private String lastName;
+    @Column(unique = true)
+    private String email;
     private String password; // Assurez-vous que le champ est marqué comme `private`
-    private String role;
+
+    private boolean active;
+
+    @Enumerated(Enum.Type.STRING)
+    private Role role;
 
     @OneToMany(mappedBy = "user")
     private List<Sale> sales; // Une liste de ventes associées à l'utilisateur

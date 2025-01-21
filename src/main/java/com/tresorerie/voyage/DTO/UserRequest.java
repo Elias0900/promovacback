@@ -1,32 +1,20 @@
-package com.tresorerie.voyage.DTO;
+package com.tresorerie.voyage.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserRequest {
-    private String identifiant;
-    private String motDePasse;
-    private String role;
-
-    // Getters et setters
-    public String getIdentifiant() {
-        return identifiant;
-    }
-
-    public void setIdentifiant(String identifiant) {
-        this.identifiant = identifiant;
-    }
-
-    public String getMotDePasse() {
-        return motDePasse;
-    }
-
-    public void setMotDePasse(String motDePasse) {
-        this.motDePasse = motDePasse;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    private long id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private boolean active;
+    private Role role; // Si le rôle est une énumération, vous pouvez le garder comme chaîne ou utiliser un type d'énumération approprié
+    private List<SaleDTO> sales; // DTO pour la liste des ventes associées à l'utilisateur
 }
