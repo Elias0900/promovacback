@@ -1,5 +1,6 @@
 package com.tresorerie.voyage.dto;
 
+import com.tresorerie.voyage.model.MyAppUser;
 import com.tresorerie.voyage.model.Vente;
 import lombok.*;
 
@@ -26,6 +27,9 @@ public class VenteDto {
     private boolean assurance; // Indique si une assurance a été souscrite
     private double montantAssurance; // Montant de l'assurance
     private double fraisAgence; // Frais d'agence
+    private double totalSansAssurance;
+
+    private Long userId; // ID de l'utilisateur associé
 
     /**
      * Convertit une entité `Vente` en un DTO `VenteDto`.
@@ -51,18 +55,20 @@ public class VenteDto {
                 .assurance(vente.isAssurance())
                 .montantAssurance(vente.getMontantAssurance())
                 .fraisAgence(vente.getFraisAgence())
+                .totalSansAssurance(vente.getTotalSansAssurance())
+                .userId(vente.getUser() != null ? vente.getUser().getId() : null) // Extraire uniquement l'ID de l'utilisateur
                 .build();
     }
 
-    /**
-     * Convertit un DTO `VenteDto` en une entité `Vente`.
-     *
-     * @param venteDto Le DTO source.
-     * @return Une entité `Vente`.
-     */
     public static Vente toEntity(VenteDto venteDto) {
         if (venteDto == null) {
             return null;
+        }
+
+        MyAppUser user = null;
+        if (venteDto.getUserId() != null) {
+            user = new MyAppUser();
+            user.setId(venteDto.getUserId()); // Créer un utilisateur avec uniquement l'ID
         }
 
         return Vente.builder()
@@ -78,6 +84,9 @@ public class VenteDto {
                 .assurance(venteDto.isAssurance())
                 .montantAssurance(venteDto.getMontantAssurance())
                 .fraisAgence(venteDto.getFraisAgence())
+                .totalSansAssurance(venteDto.getTotalSansAssurance())
+                .user(user) // Assigner l'utilisateur
                 .build();
     }
+
 }

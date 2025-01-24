@@ -51,8 +51,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable) // Désactiver l'authentification basique HTTP
                 .formLogin(AbstractHttpConfigurer::disable) // Désactiver le formulaire de connexion
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/req/signup", "/req/login", "/css/**", "/js/**").permitAll(); // Autorise les endpoints publics
-                    registry.anyRequest().authenticated(); // Exige une authentification pour le reste
+                    registry.anyRequest().permitAll(); // Autorise toutes les requêtes sans restriction
                 })
                 .build();
     }

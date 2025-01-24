@@ -1,0 +1,97 @@
+package com.tresorerie.voyage.service;
+
+import com.tresorerie.voyage.dto.BilanDto;
+import com.tresorerie.voyage.model.Bilan;
+import com.tresorerie.voyage.model.MyAppUser;
+import com.tresorerie.voyage.repository.BilanRepository;
+import com.tresorerie.voyage.repository.MyAppUserRepository;
+import com.tresorerie.voyage.repository.VenteRepository;
+import com.tresorerie.voyage.service.interf.BilanService;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+@Transactional
+public class BilanServiceImpl implements BilanService {
+
+    @Autowired
+    private BilanRepository bilanRepository;
+
+    @Autowired
+    private VenteRepository venteRepository;
+
+    @Autowired
+    private MyAppUserRepository myAppUserRepository;
+
+    @Override
+    public BilanDto saveOrUpdateBilan(Long userId) {
+        // Récupérer l'utilisateur
+        MyAppUser user = myAppUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable avec l'ID : " + userId));
+
+        // Rechercher le bilan de l'utilisateur, ou en créer un nouveau si non trouvé
+        Bilan bilan = bilanRepository.findByUserId(userId).orElseGet(Bilan::new);
+
+        // Associer l'utilisateur au bilan
+        bilan.setUser(user);
+
+        // Calculs des montants
+        double framCroisieres = venteRepository.totalMontantTOByUserIdForFramContaining(user.getId(), "%" + "FRAM" + "%");
+        double autresTo = venteRepository.totalMontantTOByUserIdForNonFram(user.getId(), "%" + "FRAM" + "%");
+        double realise = venteRepository.totalMontant(user.getId());
+        double objectif = 100000;
+        double assurance = venteRepository.totalMontantAssuranceByUserId(user.getId());
+
+        // Mise à jour des valeurs du bilan
+        bilan.setFramCroisieres(framCroisieres);
+        bilan.setAutresTo(autresTo);
+        bilan.setRealise(realise);
+        bilan.setObjectif(objectif);
+        bilan.setAssurances(assurance);
+
+        // Calcul des pourcentages
+        bilan.setPourcentageRealise(realise / objectif);
+        bilan.setPourcentageFram(framCroisieres / objectif);
+        bilan.setPourcentageAssurance(venteRepository.totalMontantAssuranceByUserId(user.getId()) / objectif);
+
+        // Calcul des primes
+        if (bilan.getPourcentageRealise() >= 1.0) {
+            bilan.setTotalPrimesFram(framCroisieres / 1.2 * 0.01);
+            bilan.setTotalPrimesAutre(autresTo / 1.2 * 0.005);
+            bilan.setTotalPrimesAss(bilan.getAssurances() / 1.2 * 0.01);
+        } else {
+            bilan.setTotalPrimesFram(framCroisieres / 1.2 * 0.01 * 0.8);
+            bilan.setTotalPrimesAutre(autresTo / 0.005 * 0.8);
+            bilan.setTotalPrimesAss(bilan.getAssurances() / 1.2 * 0.01 * 0.8);
+        }
+
+        // Calcul du total des primes brutes
+        bilan.setTotalPrimesBrutes(bilan.getTotalPrimesAutre() + bilan.getTotalPrimesFram() + bilan.getAssurances());
+
+        // Sauvegarder ou mettre à jour le bilan
+        bilan = bilanRepository.save(bilan);
+
+        // Retourner le DTO
+        return BilanDto.fromEntity(bilan);
+    }
+
+
+    @Override
+    public BilanDto getBilanById(Long id) {
+        // Recherche du Bilan par ID
+        Bilan bilan = bilanRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Bilan non trouvé"));
+        return BilanDto.fromEntity(bilan); // Retourner le DTO
+    }
+
+
+    @Override
+    public void deleteBilan(Long id) {
+        // Supprimer un Bilan par son ID
+        if (!bilanRepository.existsById(id)) {
+            throw new RuntimeException("Bilan non trouvé");
+        }
+        bilanRepository.deleteById(id); // Suppression du Bilan
+    }
+}

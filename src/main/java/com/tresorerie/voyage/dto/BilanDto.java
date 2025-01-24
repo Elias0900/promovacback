@@ -1,6 +1,7 @@
 package com.tresorerie.voyage.dto;
 
 import com.tresorerie.voyage.model.Bilan;
+import com.tresorerie.voyage.model.MyAppUser;
 import lombok.*;
 
 @Getter
@@ -11,7 +12,7 @@ import lombok.*;
 public class BilanDto {
 
     private Long id;
-    private String objectif; // Objectif
+    private double objectif; // Objectif
     private double realise; // Réalisé
     private double pourcentageRealise; // % Réalisé
     private double pourcentageFram; // % FRAM
@@ -46,6 +47,11 @@ public class BilanDto {
         if (bilanDto == null) {
             return null;
         }
+        MyAppUser user = null;
+        if (bilanDto.getUserId() != null) {
+            user = new MyAppUser();
+            user.setId(bilanDto.getUserId()); // Créer un utilisateur avec uniquement l'ID
+        }
 
         return Bilan.builder()
                 .id(bilanDto.getId())
@@ -58,6 +64,7 @@ public class BilanDto {
                 .autresTo(bilanDto.getAutresTo())
                 .assurances(bilanDto.getAssurances())
                 .totalPrimesBrutes(bilanDto.getTotalPrimesBrutes())
+                .user(user)
                 .build();
     }
 }

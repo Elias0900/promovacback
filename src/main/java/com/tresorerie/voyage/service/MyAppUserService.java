@@ -27,7 +27,7 @@ public class MyAppUserService implements UserDetailsService{
         if (user.isPresent()) {
             var userObj = user.get();
             return User.builder()
-                    .username(userObj.getEmail())
+                    .username(userObj.getUsername())
                     .password(userObj.getPassword())
                     .build();
         }else{
