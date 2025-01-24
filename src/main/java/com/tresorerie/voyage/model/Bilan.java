@@ -7,12 +7,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.io.Serializable;
+
 @Entity
 @Data
 @AllArgsConstructor
 @SuperBuilder
 @NoArgsConstructor
-public class Bilan  {
+public class Bilan implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,10 +41,4 @@ public class Bilan  {
     @JoinColumn(name = "user_id", nullable = false) // Clé étrangère vers User
     private MyAppUser user; // Relation avec l'utilisateur
 
-    public void setUser(MyAppUser user) {
-        this.user = user;
-        if (user != null) {
-            user.setBilan(this);  // Assurez-vous que l'utilisateur référence correctement le bilan
-        }
-    }
 }

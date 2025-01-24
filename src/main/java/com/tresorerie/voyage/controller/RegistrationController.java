@@ -1,8 +1,10 @@
-package com.tresorerie.voyage.controler;
+package com.tresorerie.voyage.controller;
 
+import com.tresorerie.voyage.model.Bilan;
 import com.tresorerie.voyage.model.MyAppUser;
 import com.tresorerie.voyage.repository.MyAppUserRepository;
-import com.tresorerie.voyage.service.MyAppUserService;
+import com.tresorerie.voyage.service.MyAppUserServiceImpl;
+import com.tresorerie.voyage.service.interf.BilanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,13 +25,22 @@ public class RegistrationController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private MyAppUserService myAppUserService;
+    private BilanService bilanService;
 
     @PostMapping(value = "/req/signup", consumes = "application/json")
-    public MyAppUser createUser(@RequestBody MyAppUser user){
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return myAppUserRepository.save(user);
+    public ResponseEntity<?> createUser(@RequestBody MyAppUser user) {
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+
+            MyAppUser createdUser = myAppUserRepository.save(user);
+            bilanService.saveOrUpdateBilan(user.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la création de l'utilisateur : " + e.getMessage());
+        }
     }
+
 
     @PostMapping(value = "/req/login", consumes = "application/json")
     public ResponseEntity<String> loginUser(@RequestBody MyAppUser user) {

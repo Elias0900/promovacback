@@ -36,12 +36,16 @@ public class BilanServiceImpl implements BilanService {
         // Associer l'utilisateur au bilan
         bilan.setUser(user);
 
-        // Calculs des montants
-        double framCroisieres = venteRepository.totalMontantTOByUserIdForFramContaining(user.getId(), "%" + "FRAM" + "%");
-        double autresTo = venteRepository.totalMontantTOByUserIdForNonFram(user.getId(), "%" + "FRAM" + "%");
-        double realise = venteRepository.totalMontant(user.getId());
+        // Calculs des montants avec gestion des valeurs nulles
+        double framCroisieres = venteRepository.totalMontantTOByUserIdForFramContaining(user.getId(), "%" + "FRAM" + "%") != null
+                ? venteRepository.totalMontantTOByUserIdForFramContaining(user.getId(), "%" + "FRAM" + "%") : 0.0;
+        double autresTo = venteRepository.totalMontantTOByUserIdForNonFram(user.getId(), "%" + "FRAM" + "%") != null
+                ? venteRepository.totalMontantTOByUserIdForNonFram(user.getId(), "%" + "FRAM" + "%") : 0.0;
+        double realise = venteRepository.totalMontant(user.getId()) != null
+                ? venteRepository.totalMontant(user.getId()) : 0.0;
         double objectif = 100000;
-        double assurance = venteRepository.totalMontantAssuranceByUserId(user.getId());
+        double assurance = venteRepository.totalMontantAssuranceByUserId(user.getId()) != null
+                ? venteRepository.totalMontantAssuranceByUserId(user.getId()) : 0.0;
 
         // Mise à jour des valeurs du bilan
         bilan.setFramCroisieres(framCroisieres);
@@ -53,21 +57,21 @@ public class BilanServiceImpl implements BilanService {
         // Calcul des pourcentages
         bilan.setPourcentageRealise(realise / objectif);
         bilan.setPourcentageFram(framCroisieres / objectif);
-        bilan.setPourcentageAssurance(venteRepository.totalMontantAssuranceByUserId(user.getId()) / objectif);
+        bilan.setPourcentageAssurance(assurance / objectif);
 
         // Calcul des primes
         if (bilan.getPourcentageRealise() >= 1.0) {
             bilan.setTotalPrimesFram(framCroisieres / 1.2 * 0.01);
             bilan.setTotalPrimesAutre(autresTo / 1.2 * 0.005);
-            bilan.setTotalPrimesAss(bilan.getAssurances() / 1.2 * 0.01);
+            bilan.setTotalPrimesAss(assurance / 1.2 * 0.01);
         } else {
             bilan.setTotalPrimesFram(framCroisieres / 1.2 * 0.01 * 0.8);
-            bilan.setTotalPrimesAutre(autresTo / 0.005 * 0.8);
-            bilan.setTotalPrimesAss(bilan.getAssurances() / 1.2 * 0.01 * 0.8);
+            bilan.setTotalPrimesAutre(autresTo / 1.2 * 0.005 * 0.8);
+            bilan.setTotalPrimesAss(assurance / 1.2 * 0.01 * 0.8);
         }
 
         // Calcul du total des primes brutes
-        bilan.setTotalPrimesBrutes(bilan.getTotalPrimesAutre() + bilan.getTotalPrimesFram() + bilan.getAssurances());
+        bilan.setTotalPrimesBrutes(bilan.getTotalPrimesAutre() + bilan.getTotalPrimesFram() + bilan.getTotalPrimesAss());
 
         // Sauvegarder ou mettre à jour le bilan
         bilan = bilanRepository.save(bilan);

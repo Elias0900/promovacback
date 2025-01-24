@@ -20,7 +20,6 @@ public class MyAppUserDto {
     private String username;
     private String email;
     private RoleType roleType; // Enum pour le rôle (EMPLOYE ou DIRECTEUR)
-    private List<VenteDto> transactions; // Liste simplifiée des transactions
     private BilanDto bilan; // Objet simplifié pour le bilan
 
     /**
@@ -39,14 +38,6 @@ public class MyAppUserDto {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .roleType(user.getRoleType())
-                .transactions(user.getTransaction() != null
-                        ? user.getTransaction().stream()
-                        .map(VenteDto::fromEntity) // Mapper de VenteDto
-                        .collect(Collectors.toList())
-                        : null)
-                .bilan(user.getBilan() != null
-                        ? BilanDto.fromEntity(user.getBilan()) // Mapper de BilanDto
-                        : null)
                 .build();
     }
 
@@ -61,23 +52,11 @@ public class MyAppUserDto {
             return null;
         }
 
-        MyAppUser user = MyAppUser.builder()
+        return MyAppUser.builder()
                 .id(userDto.getId())
                 .username(userDto.getUsername())
                 .email(userDto.getEmail())
                 .roleType(userDto.getRoleType())
                 .build();
-
-        if (userDto.getTransactions() != null) {
-            user.setTransaction(userDto.getTransactions().stream()
-                    .map(VenteDto::toEntity) // Mapper de VenteDto
-                    .collect(Collectors.toList()));
-        }
-
-        if (userDto.getBilan() != null) {
-            user.setBilan(BilanDto.toEntity(userDto.getBilan())); // Mapper de BilanDto
-        }
-
-        return user;
     }
 }

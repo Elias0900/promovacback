@@ -27,7 +27,6 @@ public class VenteServiceImpl implements VenteService {
     @Autowired
     private MyAppUserRepository myAppUserRepository;
 
-
     @Autowired
     private BilanService bilanService;
 
@@ -45,7 +44,7 @@ public class VenteServiceImpl implements VenteService {
         // Sauvegarder la vente
         Vente savedVente = venteRepository.save(vente);
 
-
+        bilanService.saveOrUpdateBilan(user.getId());
         // Retourner le DTO
         return VenteDto.fromEntity(savedVente);
     }

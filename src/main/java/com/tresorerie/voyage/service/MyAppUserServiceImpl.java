@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class MyAppUserService implements UserDetailsService{
+public class MyAppUserServiceImpl implements UserDetailsService {
 
     @Autowired
     private MyAppUserRepository repository;
@@ -34,7 +34,4 @@ public class MyAppUserService implements UserDetailsService{
             throw new UsernameNotFoundException(username);
         }
     }
-
-
-
 }

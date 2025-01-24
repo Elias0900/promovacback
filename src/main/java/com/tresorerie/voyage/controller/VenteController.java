@@ -1,8 +1,7 @@
-package com.tresorerie.voyage.controler;
+package com.tresorerie.voyage.controller;
 
 import com.tresorerie.voyage.dto.VenteDto;
 import com.tresorerie.voyage.dto.VentesParJourDto;
-import com.tresorerie.voyage.model.Vente;
 import com.tresorerie.voyage.service.interf.VenteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;

@@ -1,6 +1,6 @@
 package com.tresorerie.voyage.config;
 
-import com.tresorerie.voyage.service.MyAppUserService;
+import com.tresorerie.voyage.service.MyAppUserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,10 +18,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final MyAppUserService appUserService;
+    private final MyAppUserServiceImpl appUserService;
 
     @Autowired
-    public SecurityConfig(MyAppUserService appUserService) {
+    public SecurityConfig(MyAppUserServiceImpl appUserService) {
         this.appUserService = appUserService;
     }
 
