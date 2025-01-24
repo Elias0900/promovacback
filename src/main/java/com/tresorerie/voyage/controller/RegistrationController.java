@@ -30,16 +30,26 @@ public class RegistrationController {
     @PostMapping(value = "/req/signup", consumes = "application/json")
     public ResponseEntity<?> createUser(@RequestBody MyAppUser user) {
         try {
+            // Vérifier si l'email est déjà utilisé
+            if (myAppUserRepository.findByEmail(user.getEmail()) != null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("L'email est déjà utilisé.");
+            }
+
+            // Encoder le mot de passe
             user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-
+            // Sauvegarder l'utilisateur
             MyAppUser createdUser = myAppUserRepository.save(user);
+
+            // Sauvegarder le bilan de l'utilisateur
             bilanService.saveOrUpdateBilan(user.getId());
+
             return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la création de l'utilisateur : " + e.getMessage());
         }
     }
+
 
 
     @PostMapping(value = "/req/login", consumes = "application/json")
@@ -57,7 +67,7 @@ public class RegistrationController {
         if (passwordEncoder.matches(user.getPassword(), existingUser.get().getPassword()    )) {
             return ResponseEntity.ok("Connexion réussie");
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Mot de passe incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiant incorrect");
         }
     }
 

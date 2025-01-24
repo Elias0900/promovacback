@@ -31,6 +31,7 @@ public class MyAppUser implements Serializable {
 
     @NotBlank(message = "L'email est obligatoire.")
     @Email(message = "Veuillez fournir une adresse email valide.")
+    @Column(unique = true)
     private String email;
 
     @NotBlank(message = "Le mot de passe est obligatoire.")
