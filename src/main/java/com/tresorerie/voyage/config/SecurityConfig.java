@@ -47,15 +47,14 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(httpForm -> {
-                    httpForm.loginPage("/req/login").permitAll();
-                    httpForm.defaultSuccessUrl("/index");
-                })
+                .csrf(AbstractHttpConfigurer::disable) // Désactiver CSRF pour les tests d'API REST
+                .httpBasic(AbstractHttpConfigurer::disable) // Désactiver l'authentification basique HTTP
+                .formLogin(AbstractHttpConfigurer::disable) // Désactiver le formulaire de connexion
                 .authorizeHttpRequests(registry -> {
-                    registry.requestMatchers("/req/signup", "/css/**", "/js/**").permitAll();
-                    registry.anyRequest().authenticated();
+                    registry.requestMatchers("/req/signup", "/req/login", "/css/**", "/js/**").permitAll(); // Autorise les endpoints publics
+                    registry.anyRequest().authenticated(); // Exige une authentification pour le reste
                 })
                 .build();
     }
+
 }
