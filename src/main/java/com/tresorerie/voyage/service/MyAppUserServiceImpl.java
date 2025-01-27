@@ -23,7 +23,7 @@ public class MyAppUserServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Optional<MyAppUser> user = repository.findByUsername(username);
+        Optional<MyAppUser> user = Optional.ofNullable(repository.findByEmail(username));
         if (user.isPresent()) {
             var userObj = user.get();
             return User.builder()

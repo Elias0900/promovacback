@@ -1,9 +1,11 @@
 package com.tresorerie.voyage.controller;
 
-import com.tresorerie.voyage.model.Bilan;
+import com.tresorerie.voyage.config.ApiErrorResponse;
+import com.tresorerie.voyage.config.ApiResponse;
+import com.tresorerie.voyage.config.AuthResponse;
+import com.tresorerie.voyage.jwt.JwtHelper;
 import com.tresorerie.voyage.model.MyAppUser;
 import com.tresorerie.voyage.repository.MyAppUserRepository;
-import com.tresorerie.voyage.service.MyAppUserServiceImpl;
 import com.tresorerie.voyage.service.interf.BilanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,12 +29,13 @@ public class RegistrationController {
     @Autowired
     private BilanService bilanService;
 
+    // Méthode d'inscription
     @PostMapping(value = "/req/signup", consumes = "application/json")
     public ResponseEntity<?> createUser(@RequestBody MyAppUser user) {
         try {
             // Vérifier si l'email est déjà utilisé
             if (myAppUserRepository.findByEmail(user.getEmail()) != null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("L'email est déjà utilisé.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "L'email est déjà utilisé."));
             }
 
             // Encoder le mot de passe
@@ -44,32 +47,35 @@ public class RegistrationController {
             // Sauvegarder le bilan de l'utilisateur
             bilanService.saveOrUpdateBilan(user.getId());
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+            // Générer le token JWT
+            String token = JwtHelper.generateToken(createdUser.getEmail(), createdUser.getRoleType());
+
+            // Répondre avec un message structuré et le token
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new AuthResponse(true, "Utilisateur créé avec succès", token, createdUser.getRoleType(), createdUser.getEmail(), createdUser.getId()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Erreur lors de la création de l'utilisateur : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ApiResponse(false, "Erreur lors de la création de l'utilisateur : " + e.getMessage()));
         }
     }
 
-
-
+    // Méthode de connexion
     @PostMapping(value = "/req/login", consumes = "application/json")
-    public ResponseEntity<String> loginUser(@RequestBody MyAppUser user) {
-        System.out.println("Login endpoint hit with username: " + user.getUsername());
-
-        // Recherche de l'utilisateur par son nom d'utilisateur (ou email)
-        Optional<MyAppUser> existingUser = myAppUserRepository.findByUsername(user.getUsername());
+    public ResponseEntity<?> loginUser(@RequestBody MyAppUser user) {
+        Optional<MyAppUser> existingUser = Optional.ofNullable(myAppUserRepository.findByEmail(user.getEmail()));
 
         if (existingUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Utilisateur non trouvé");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(false, "Utilisateur non trouvé"));
         }
 
         // Vérification du mot de passe
-        if (passwordEncoder.matches(user.getPassword(), existingUser.get().getPassword()    )) {
-            return ResponseEntity.ok("Connexion réussie");
+        if (passwordEncoder.matches(user.getPassword(), existingUser.get().getPassword())) {
+            // Générer un token JWT
+            String token = JwtHelper.generateToken(existingUser.get().getEmail(), existingUser.get().getRoleType());
+
+            // Répondre avec le token et les détails de l'utilisateur
+            return ResponseEntity.ok().body(new AuthResponse(true, "Connexion réussie", token,existingUser.get().getRoleType(), existingUser.get().getEmail() , existingUser.get().getId()));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Identifiant incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse(false, "Identifiant ou mot de passe incorrect"));
         }
     }
-
-
 }
